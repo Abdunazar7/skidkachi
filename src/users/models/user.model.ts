@@ -93,7 +93,8 @@ export class User extends Model<User, IUserCreationAttr> {
   declare refresh_token: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.UUID,
+    defaultValue: DataType.UUIDV4
   })
   declare activation_link: string;
 }
