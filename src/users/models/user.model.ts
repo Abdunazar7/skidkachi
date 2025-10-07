@@ -88,7 +88,7 @@ export class User extends Model<User, IUserCreationAttr> {
   declare is_owner: boolean;
 
   @Column({
-    type: DataType.STRING(2000),
+    type: DataType.STRING(2000)
   })
   declare refresh_token: string;
 
