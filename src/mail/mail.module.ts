@@ -23,7 +23,7 @@ import { join } from "path";
           },
         },
         defaults: {
-          from: `"Skidkachi, No Reply" <${config.get<string>("MAILDEV_USER")}>`,
+          from: `"Donation , no reply" <${config.get<string>("MAILDEV_USER")}>`,
         },
         template: {
           dir: join(__dirname, "/templates"),

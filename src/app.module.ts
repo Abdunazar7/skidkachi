@@ -4,6 +4,9 @@ import { SequelizeModule } from "@nestjs/sequelize";
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { MailModule } from './mail/mail.module';
+import { BotModule } from './bot/bot.module';
+import { TelegrafModule } from 'nestjs-telegraf';
+import { BOT_NAME } from '../app.constants';
 
 @Module({
   imports: [
@@ -21,11 +24,22 @@ import { MailModule } from './mail/mail.module';
       sync: { alter: true },
     }),
 
+    TelegrafModule.forRootAsync({
+      botName: BOT_NAME,
+      useFactory: () => ({
+        token: process.env.BOT_TOKEN!,
+        middlewares: [],
+        include: [BotModule],
+      }),
+    }),
+
     UsersModule,
 
     AuthModule,
 
     MailModule,
+
+    BotModule,
   ],
   controllers: [],
   providers: [],

@@ -14,7 +14,7 @@ export class MailService {
 
     await this.mailerService.sendMail({
       to: user.email,
-      subject: "Welcome to Skidkachi API. ",
+      subject: "Welcome to Donation API. ",
       template: "./confirmation",
       context: {
         name: user.name,
