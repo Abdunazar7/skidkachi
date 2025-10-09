@@ -1,26 +1,97 @@
-import { Injectable } from '@nestjs/common';
-import { CreateBotDto } from './dto/create-bot.dto';
-import { UpdateBotDto } from './dto/update-bot.dto';
+import { Injectable } from "@nestjs/common";
+import { InjectModel } from "@nestjs/sequelize";
+import { InjectBot } from "nestjs-telegraf";
+import { BOT_NAME } from "../../app.constants";
+import { Context, Markup, Telegraf } from "telegraf";
+import { Bot } from "./models/bot.model";
+import { userInfo } from "os";
 
 @Injectable()
 export class BotService {
-  create(createBotDto: CreateBotDto) {
-    return 'This action adds a new bot';
+  constructor(
+    @InjectModel(Bot) private readonly botModel: typeof Bot,
+    @InjectBot(BOT_NAME) private readonly bot: Telegraf<Context>
+  ) {}
+
+  // 🟢 /start komandasi
+  async start(ctx: Context) {
+    try {
+      const user_id = ctx.from!.id;
+      const user = await this.botModel.findByPk(user_id);
+
+      if (!user) {
+        await this.botModel.create({
+          user_id,
+          username: ctx.from?.username,
+          first_name: ctx.from?.first_name,
+          last_name: ctx.from?.last_name,
+          language_code: ctx.from?.language_code,
+        });
+
+        await ctx.replyWithHTML(
+          `Please press <b>📞 Share Contact</b> button`,
+          Markup.keyboard([[Markup.button.contactRequest("📞 Share Contact")]])
+            .oneTime()
+            .resize()
+        );
+      } else if (!user.is_active) {
+        await ctx.replyWithHTML(
+          `Please share your contact again to activate your profile.`,
+          Markup.keyboard([[Markup.button.contactRequest("📞 Share Contact")]])
+            .oneTime()
+            .resize()
+        );
+      } else {
+        await ctx.reply(`
+          
+          You are already active!`);
+      }
+    } catch (error) {
+      console.log("❌ Error in start:", error);
+    }
   }
 
-  findAll() {
-    return `This action returns all bot`;
-  }
+  // 📞 Foydalanuvchi kontakt yuborganda
+  async onContact(ctx: Context) {
+    try {
+      const user_id = ctx.from!.id;
+      const contact = ctx.message?.["contact"];
 
-  findOne(id: number) {
-    return `This action returns a #${id} bot`;
-  }
+      if (!contact) {
+        return await ctx.reply(
+          "⚠️ Please use the contact button to share your number."
+        );
+      }
 
-  update(id: number, updateBotDto: UpdateBotDto) {
-    return `This action updates a #${id} bot`;
-  }
+      const phone = contact.phone_number;
+      const user = await this.botModel.findByPk(user_id);
 
-  remove(id: number) {
-    return `This action removes a #${id} bot`;
+      if (!user) {
+        return await ctx.reply("❌ User not found. Please send /start again.");
+      } else if (contact.user_id != user_id) {
+        await ctx.replyWithHTML(
+          `Please share your own contact`,
+          Markup.keyboard([[Markup.button.contactRequest("📞 Share Contact")]])
+            .oneTime()
+            .resize()
+        );
+      } else {
+        await this.botModel.update(
+          {
+            phone_number: phone[0] == "+" ? phone : "+" + phone,
+            is_active: true,
+          },
+          { where: { user_id } }
+        );
+
+        await ctx.replyWithHTML(
+          `Welcome! You are now active.`,
+          Markup.removeKeyboard()
+        );
+      }
+    } catch (error) {
+      console.log("❌ Error on Contact:", error);
+      await ctx.reply("Something went wrong. Please try again.");
+    }
   }
 }
