@@ -21,7 +21,7 @@ import { BOT_NAME } from '../app.constants';
       database: process.env.PG_DATABASE,
       autoLoadModels: true,
       logging: false,
-      sync: { alter: true },
+      sync: { force: true },
     }),
 
     TelegrafModule.forRootAsync({

@@ -1,4 +1,4 @@
-import { Command, Ctx, Hears, On, Start, Update } from "nestjs-telegraf";
+import { Action, Command, Ctx, Hears, On, Start, Update } from "nestjs-telegraf";
 import { BotService } from "./bot.service";
 import { Context, Markup } from "telegraf";
 import { keyboard } from "telegraf/markup";
@@ -89,6 +89,20 @@ export class Botupdate {
   async hearsolti(@Ctx() ctx: Context) {
     await ctx.replyWithHTML("<b>Button 6 activated</b>");
   }
+  
+  @Action("product_1")
+  async prod1(@Ctx() ctx: Context) {
+    await ctx.replyWithHTML("<b>1 bosildi</b>")
+  }
+
+  @Action(/^product_\d+/)
+  async prodany(@Ctx() ctx: Context) {
+    if("data" in ctx.callbackQuery!) {
+      const data = ctx.callbackQuery?.data;
+      const productId = data.split("_")[1];
+      await ctx.replyWithHTML(`<b>${productId} bosildi</b>`)
+    }
+  }
 
   @Command("inline")
   async inlineKeyboard(@Ctx() ctx: Context) {
@@ -109,6 +123,7 @@ export class Botupdate {
       },
     });
   }
+
 
   @Command("main")
   async mainKeyboard(@Ctx() ctx: Context) {

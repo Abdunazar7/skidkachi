@@ -65,9 +65,13 @@ export class AuthService {
     }
 
     const { accessToken, refreshToken } = await this.generateTokens(user);
+
     const hashedRefreshToken = await bcrypt.hash(refreshToken, 7);
+
     user.refresh_token = hashedRefreshToken;
+
     await user.save();
+
     res.cookie("refreshToken", refreshToken, {
       maxAge: Number(process.env.COOKIE_TIME),
       httpOnly: true,
