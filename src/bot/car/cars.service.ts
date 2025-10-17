@@ -14,12 +14,12 @@ export class CarService {
     @InjectBot(BOT_NAME) private readonly bot: Telegraf<Context>
   ) {}
 
-  async carMenu(ctx: Context, menuText = "Mashinalar menusi") {
+  async carMenu(ctx: Context, menuText = "Cars menu") {
     try {
       await ctx.replyWithHTML(menuText, {
         ...Markup.keyboard([
-          ["Mening mashinalarim", "Yangi mashina qoshish"],
-          ["Asosiy menyuga qaytish"],
+          ["My cars", "Add new car"],
+          ["Back to main menu"],
         ]).resize(),
       });
     } catch (error) {
@@ -27,7 +27,7 @@ export class CarService {
     }
   }
 
-  async addNewCar(ctx: Context, menuText = "Mashinalar menusi") {
+  async addNewCar(ctx: Context, menuText = "Cars menu") {
     try {
       const user_id = ctx.from?.id;
       const user = await this.botModel.findByPk(user_id);
@@ -39,7 +39,7 @@ export class CarService {
 
       await this.CarModel.create({ user_id, last_state: "car_number" });
 
-      await ctx.replyWithHTML("Yangi mashina raqamini kritin", {
+      await ctx.replyWithHTML("Enter number of new car.", {
         ...Markup.removeKeyboard(),
       });
     } catch (error) {
@@ -47,7 +47,7 @@ export class CarService {
     }
   }
 
-  async showCar(ctx: Context, menuText = "Mashinalar menusi") {
+  async showCar(ctx: Context, menuText = "Cars menu") {
     try {
       const user_id = ctx.from?.id;
       const user = await this.botModel.findByPk(user_id);
@@ -61,14 +61,14 @@ export class CarService {
         where: { user_id, last_state: "finish" },
       });
       if (car.length == 0) {
-        await ctx.replyWithHTML("Sizda mashina qoshilmagan");
+        await ctx.replyWithHTML("You have no cars added.");
       } else {
         car.forEach(async (car) => {
           await ctx.replyWithPhoto(car.photo, {
-            caption: `Manzil brand: ${car.Brand}\n 
+            caption: `Car brand: ${car.Brand}\n 
             model: ${car.Model}\n 
-            raqam: ${car.car_number}\n 
-            rangi: ${car.color}\n`,
+            number: ${car.car_number}\n 
+            color: ${car.color}\n`,
             reply_markup: {
               inline_keyboard: [
                 [
@@ -80,7 +80,7 @@ export class CarService {
         });
       }
     } catch (error) {
-      console.log("showAddress error", error);
+      console.log("Show address error", error);
     }
   }
 
@@ -90,9 +90,9 @@ export class CarService {
       const car_id = contextAction.split("_")[1];
       await this.CarModel.destroy({ where: { id: car_id } });
 
-      await ctx.replyWithHTML("Mashina malumot ochrildi");
+      await ctx.replyWithHTML("Car details deleted");
     } catch (error) {
-      console.log("Error on delCar", error);
+      console.log("Error during car delete", error);
     }
   }
 }
