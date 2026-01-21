@@ -4,6 +4,7 @@ import { Context, Markup } from "telegraf";
 import { UseFilters, UseGuards } from "@nestjs/common";
 import { TelegrafExceptionFilter } from "../common/filters/telegraf-exception.filter";
 import { AdminGuard } from "../common/guards/admin.guard";
+import { ChannelSubscriptionGuard } from "../common/guards/subscribe.guard";
 
 @Update()
 export class BotUpdate {
@@ -13,12 +14,21 @@ export class BotUpdate {
   @UseGuards(AdminGuard)
   @Command("admin")
   async onAdminCommand(@Ctx() ctx: Context) {
-    await this.botService.mainMenu(ctx, `Xush kelibsiz, ADMIN 🙋‍♂️`)
+    await this.botService.mainMenu(ctx, `Xush kelibsiz, ADMIN 🙋‍♂️`);
   }
 
+  @UseGuards(ChannelSubscriptionGuard)
   @Start()
   async start(@Ctx() ctx: Context) {
     await this.botService.start(ctx);
+  }
+
+  @UseGuards(ChannelSubscriptionGuard)
+  @Action("subscribed")
+  async subscribe(@Ctx() ctx: Context) {
+    const contextMessage = ctx.callbackQuery!["message"];
+    await ctx.deleteMessage(contextMessage?.message_id);
+    this.start(ctx);
   }
 
   @On("contact")
@@ -38,7 +48,7 @@ export class BotUpdate {
 
   @On("location")
   async onLocation(@Ctx() ctx: Context) {
-    await this.botService.onLocation(ctx)
+    await this.botService.onLocation(ctx);
   }
 
   @On("text")
@@ -48,7 +58,7 @@ export class BotUpdate {
 
   @On("photo")
   async onPhoto(@Ctx() ctx: Context) {
-    await this.botService.onPhoto(ctx)
+    await this.botService.onPhoto(ctx);
   }
 
   // @On("video")

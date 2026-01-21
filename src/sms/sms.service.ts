@@ -18,7 +18,7 @@ export class SmsService {
       url: process.env.SMS_URL,
       headers: {
         Authorization: `Bearer ${process.env.SMS_TOKEN}`,
-        ...data.getHeaders(), // FormData headerlarini qo‘shish muhim!
+        ...data.getHeaders(),
       },
       data,
     };
